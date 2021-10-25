@@ -308,4 +308,3 @@ for each_text in text_list_extracted:
         print("insert_in_processos_retornos: {insert_in_processos_retornos}")
     register_log(path_logs_insert_in_processos_retornos,
                  values_of_get_data, log_time)
-
