@@ -1,0 +1,16 @@
+{
+    "path_pdf_downloads": "extrator/pdf_download",
+    "path_text_extracted": "extrator/txt",
+    "path_logs": "extrator/logs/log.csv",
+    "keywords_list": ["CPF", "CPF/CNPJ", "Favorecido", "Data do Depósito", "Conta/Guia", "Precatório Judicial", "Valor", "Autor:", "autor", "Processo", "processo"],
+    "run_extrator": true,
+    "insert_processos_retornos_activated": true,
+    "data_deposito_default": "2009-01-01",
+    "host": "138.197.69.31",
+    "user": "gridwti_admrobots",
+    "password": "grid@robots",
+    "database": "gridwti_gridrobots",
+    "delay": 10,
+    "sql_processos_retorno": "INSERT INTO processos_retornos (numero_processo, documento_processo, nome_processo, conta_guia, data_deposito, nome_favorecido, favorecido_documento, numero_precatorio_judicial, valor_precatorio, data_resgate, created, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+
+}
