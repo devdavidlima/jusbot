@@ -5,7 +5,7 @@
     "path_logs_insert_in_processos_retornos": "extrator/logs/insert_in_processos_retornos.csv",
     "keywords_list": ["CPF", "CPF/CNPJ", "Favorecido", "Data do Depósito", "Conta/Guia", "Precatório Judicial", "Valor", "Autor:", "autor", "Processo", "processo"],
     "run_extrator": true,
-    "insert_processos_retornos_activated": true,
+    "insert_processos_retornos_activated": false,
     "data_deposito_default": "2009-01-01",
     "host": "138.197.69.31",
     "user": "gridwti_admrobots",

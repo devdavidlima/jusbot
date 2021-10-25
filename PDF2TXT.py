@@ -305,6 +305,7 @@ for each_text in text_list_extracted:
 
         #insert_inf_processo_retornos(mycursor, values_of_get_data)
     else:
-        print("insert_in_processos_retornos: {insert_in_processos_retornos}")
+        print(
+            f"insert_in_processos_retornos: {insert_processos_retornos_activated}")
     register_log(path_logs_insert_in_processos_retornos,
                  values_of_get_data, log_time)
