@@ -3,7 +3,7 @@ import re
 from datetime import datetime, time
 import pdfplumber
 from db_functions import mycursor, register_log, insert_in_processo_retornos
-from setup_extrator import path_pdf_downloads, path_text_extracted, path_log, keywords_list, insert_processos_retornos_activated, data_deposito_default, sql_processos_retorno
+from setup_extrator import path_pdf_downloads, path_text_extracted, path_log, keywords_list, insert_processos_retornos_activated, data_deposito_default, sql_processos_retorno, path_logs_insert_in_processos_retornos
 
 
 def create_text_backup():
@@ -306,6 +306,6 @@ for each_text in text_list_extracted:
         #insert_inf_processo_retornos(mycursor, values_of_get_data)
     else:
         print("insert_in_processos_retornos: {insert_in_processos_retornos}")
-    register_log("extrator/logs/insert_in_processos_retornos.csv",
+    register_log(path_logs_insert_in_processos_retornos,
                  values_of_get_data, log_time)
 

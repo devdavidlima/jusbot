@@ -30,3 +30,4 @@ database = read_input_json["database"]
 delay = read_input_json["delay"]
 
 sql_processos_retorno = read_input_json["sql_processos_retorno"]
+path_logs_insert_in_processos_retornos = read_input_json["path_logs_insert_in_processos_retornos"]
