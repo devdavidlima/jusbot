@@ -1,19 +1,117 @@
 #!/usr/bin/python3
 import os
 import re
+import csv
+import mysql.connector
 from datetime import datetime, time
 import pdfplumber
-from db_functions import mycursor, register_log, insert_in_processo_retornos
-from setup_extrator import path_pdf_downloads, path_text_extracted, path_log, keywords_list, insert_processos_retornos_activated, data_deposito_default, sql_processos_retorno, path_logs_insert_in_processos_retornos
+#from db_functions import , insert_in_processo_retornos
+#from setup_extrator import path_pdf_downloads, path_text_extracted, path_log, keywords_list, path_logs_insert_in_processos_retornos
+#from setup_extrator import insert_processos_retornos_activated, data_deposito_default, sql_processos_retorno
+#from setup_extrator import host, user, password, database, sql_processos_retorno, text_backup_path, pdf_backup_path
+
+### setup json #####################################################
+import json
+
+jsonFile = "setup_extrator.json"
 
 
-def create_text_backup():
-    pass
+def read_configJson(arquivo):
+    try:
+        with open(arquivo) as f:
+            config_json = json.load(f)
+    except:
+        print("[erro] setup.json Inlegível")
+
+    return config_json
 
 
-def clear_text_path():
-    pass
+read_input_json = read_configJson(jsonFile)
 
+path_pdf_downloads = read_input_json["path_pdf_downloads"]
+path_text_extracted = read_input_json["path_text_extracted"]
+path_log = read_input_json["path_logs"]
+text_backup_path = read_input_json["text_backup_path"]
+pdf_backup_path = read_input_json["pdf_backup_path"]
+keywords_list = read_input_json["keywords_list"]
+run_extrator_activate = read_input_json["run_extrator"]
+insert_processos_retornos_activated = read_input_json["insert_processos_retornos_activated"]
+data_deposito_default = read_input_json["data_deposito_default"]
+
+host = read_input_json["host"]
+user = read_input_json["user"]
+password = read_input_json["password"]
+database = read_input_json["database"]
+delay = read_input_json["delay"]
+
+sql_processos_retorno = read_input_json["sql_processos_retorno"]
+path_logs_insert_in_processos_retornos = read_input_json["path_logs_insert_in_processos_retornos"]
+
+
+### Logs e Mysql #####################################################
+def mysql_connect(host, user, password, database):
+    mydb = mysql.connector.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=database
+    )
+
+    mycursor = mydb.cursor()
+
+    return mycursor
+
+def register_log(csv_path, log, logtime):
+    with open(csv_path, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([log, logtime])
+
+def insert_in_processo_retornos(host, user, password, database, sql_processos_retornos, numero_processo, docprocesso, favorecido_nome, conta, datadeposito, valor, log_time, status=0, data_resgate=""):
+    mydb = mysql.connector.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=database
+    )
+
+    mycursor = mydb.cursor()
+    
+    numero_processos = []
+    sql = sql_processos_retornos
+    #sql = "INSERT INTO processos_retornos (numero_processo, documento_processo, nome_processo, conta_guia, data_deposito, nome_favorecido, favorecido_documento, numero_precatorio_judicial, valor_precatorio, data_resgate, created, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    # numero_processo, nome_processo, ano_processo, valor_precatorio, status
+    # documentoProcesso =
+    value = (numero_processo, docprocesso, favorecido_nome, conta, datadeposito,
+             favorecido_nome, docprocesso, numero_processo, valor, data_resgate, log_time, status)
+
+    try:
+        mycursor.execute(sql, value)
+        mydb.commit()
+
+        log = f">>>[Sucesso MySql] insert_in_processo_retornos -> {value}"
+
+    except:
+        log = ">>[erro] insert_in_processo_retornos "
+
+    print(log)
+
+    return numero_processos
+
+#### Script Extrator #######################################################
+#>>>>>>>>>>> extrator/txt_backup/2010.00526-5.txt
+def move_pdftxt_to_backup(each_text):
+    pure_text_name = each_text.replace("extrator/txt/","")
+    os.rename(each_text, text_backup_path + pure_text_name)
+    
+    print("\t [BACKUP TXT SUCESSO !! ]")
+    print(f"\tmovendo o TXT para backup {each_text} --> {text_backup_path + pure_text_name}")
+
+    pure_text_name = pure_text_name.replace(".txt",".pdf")
+    a = path_pdf_downloads + "/" + pure_text_name
+    os.rename(a, pdf_backup_path + pure_text_name)
+    print(f"\tmovendo o PDF para backup {a} --> {pdf_backup_path + pure_text_name}")
+    print("\t [BACKUP PDF SUCESSO !! ]")
+    
 
 pdfdir = path_pdf_downloads
 text_dir = path_text_extracted
@@ -46,8 +144,6 @@ print("*************\n")
 
 # PDF to TXT
 # Txt list
-
-
 def pdf2txt(pdflist_to_read, pdfdir, text_dir, log_time):
     print("*************")
     text = ""
@@ -114,7 +210,6 @@ def pdf2txt(pdflist_to_read, pdfdir, text_dir, log_time):
 
 
 # get data from text
-
 def get_data(textlist_extracted, keywords_list):
     print("*****")
     print(f"Extraindo Dados do Arquivo: {textlist_extracted}:\n")
@@ -267,7 +362,6 @@ text_list_extracted = pdf2txt(pdflist_to_read=pdflist_to_read, pdfdir=pdfdir,
 # 3) nome processo = nome favorecido
 # 4) data deposito (ta meio zuada, se n conseguir vai startar desde 2009) (ok) -> exception default
 
-
 # run extrator and insert
 for each_text in text_list_extracted:
     values_of_get_data = get_data(each_text, keywords_list)
@@ -301,12 +395,15 @@ for each_text in text_list_extracted:
                 print(f"\t** valor: {valor}")
 
                 # Insert_processos_retornos_mysql
-                insert_in_processo_retornos(sql_processos_retorno, numero_processo,
-                                            docprocesso, favorecido_nome, conta, data_deposito_default, valor, log_time)
 
+               
+                insert_in_processo_retornos(host, user, password, database, sql_processos_retorno, numero_processo,docprocesso, favorecido_nome, conta, data_deposito_default, valor, log_time)
+                # se conseguiu ler movar os arquivos para backup e sai da fila de leitura
+        move_pdftxt_to_backup(each_text)
+        #print(">>>>>>>>>>>",each_text)
         #insert_inf_processo_retornos(mycursor, values_of_get_data)
     else:
         print(
-            f"insert_in_processos_retornos: {insert_processos_retornos_activated}")
+            f"MySql - insert_in_processos_retornos: {insert_processos_retornos_activated}")
     register_log(path_logs_insert_in_processos_retornos,
                  values_of_get_data, log_time)

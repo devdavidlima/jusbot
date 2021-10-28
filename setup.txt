@@ -1,0 +1,12 @@
+import cx_Freeze
+
+executables = [cx_Freeze.Executable('extrator.py')]
+
+cx_Freeze.setup(
+    name="jusbot-extrator",
+    options={'build_exe': {'packages':['pdfplumber', 'mysql.connector'],
+                           'include_files':['']}},
+
+    executables = executables
+    
+)
